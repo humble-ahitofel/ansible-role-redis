@@ -1,0 +1,35 @@
+- name: Install Redis.
+  apt:
+    name: redis-server
+    state: present
+
+- name: Configure Redis.
+  template:
+    src: redis.conf.j2
+    dest: /etc/redis/redis.conf
+    mode: 0644
+  notify: restart redis
+
+- name: Add redis.unit directory.
+  file:
+    name: /etc/systemd/system/redis-server.service.d
+    state: directory
+
+- name: Raise redis-server ulimit.
+  template:
+    src: raise-ulimit.conf.j2
+    dest: /etc/systemd/system/redis-server.service.d/raise-ulimit.conf
+  notify:
+    - restart redis
+
+- name: Set vm.overcommit_memory = 1
+  sysctl:
+    name: vm.overcommit_memory
+    value: 1
+    state: present
+    reload: yes
+
+- name: Ensure Redis is enabled on boot.
+  service:
+    name: redis-server
+    enabled: yes
