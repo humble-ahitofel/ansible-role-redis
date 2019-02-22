@@ -16,7 +16,9 @@ None.
 Role Variables
 --------------
 
-None.
+* redis_save list of save options. Can be set to empty list to disable rdb.
+* redis_maxmemory set maxmemory.
+* redis_maxmemory_policy set maxmemory-policy.
 
 Dependencies
 ------------
