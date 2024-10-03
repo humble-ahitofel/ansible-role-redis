@@ -1,35 +1,40 @@
-- name: Install Redis.
+- name: Install Redis Stack server
+  ansible.builtin.import_tasks: install-redis-stack.yml
+  when: install_redis_stack
+
+- name: Install distro managed Redis server
   apt:
     name: redis-server
     state: present
+  when: not install_redis_stack
 
-- name: Configure Redis.
+- name: Configure Redis
   template:
     src: redis.conf.j2
-    dest: /etc/redis/redis.conf
+    dest: "{{ redis_config_file }}"
     mode: 0644
   notify: restart redis
 
-- name: Add redis.unit directory.
+- name: Add redis systemd override directory
   file:
-    name: /etc/systemd/system/redis-server.service.d
+    path: "{{ redis_systemd_override_dir }}"
     state: directory
 
-- name: Raise redis-server ulimit.
+- name: Raise Redis ulimit
   template:
     src: raise-ulimit.conf.j2
-    dest: /etc/systemd/system/redis-server.service.d/raise-ulimit.conf
-  notify:
-    - restart redis
+    dest: "{{ redis_systemd_override_dir }}/raise-ulimit.conf"
+  notify: restart redis
 
-- name: Set vm.overcommit_memory = 1
+- name: Set vm.overcommit_memory to 1
   sysctl:
     name: vm.overcommit_memory
     value: 1
     state: present
     reload: yes
 
-- name: Ensure Redis is enabled on boot.
+- name: Ensure Redis service is enabled and started
   service:
-    name: redis-server
+    name: "{{ redis_service_name }}"
+    state: started
     enabled: yes

@@ -1,0 +1,42 @@
+---
+
+- name: Install required packages for redis-stack
+  apt:
+    name:
+      - lsb-release
+      - curl
+      - gpg
+    state: present
+
+# We need to include libssl1.1 because redis-stack requires it. Since Redis hasn't released a version for Debian
+# Bookworm, we're using the Bullseye version. Bookworm provides libssl 2.x by default, which is incompatible with
+# redis-stack, so we need to manually install the older libssl1.1 from Bullseye.
+- name: Download libssl1.1 package from Debian Bullseye
+  ansible.builtin.get_url:
+    url: http://ftp.fi.debian.org/debian/pool/main/o/openssl/libssl1.1_1.1.1w-0+deb11u1_amd64.deb
+    dest: /tmp/libssl1.1_1.1.1w-0+deb11u1_amd64.deb
+    checksum: "sha256:aadf8b4b197335645b230c2839b4517aa444fd2e8f434e5438c48a18857988f7"
+
+- name: Install libssl1.1 package
+  apt:
+    deb: /tmp/libssl1.1_1.1.1w-0+deb11u1_amd64.deb
+
+- name: Copy Redis Stack GPG key to target
+  copy:
+    src: redis-archive-keyring.gpg
+    dest: /usr/share/keyrings/redis-archive-keyring.gpg
+    mode: '0644'
+
+- name: Add Redis Stack apt repository
+  apt_repository:
+    repo: "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb bullseye main"
+    filename: redis
+
+- name: Update apt cache
+  apt:
+    update_cache: yes
+
+- name: Install redis-stack-server
+  apt:
+    name: redis-stack-server
+    state: present

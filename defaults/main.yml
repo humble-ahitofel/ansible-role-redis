@@ -2,3 +2,11 @@ redis_save:
   - 900 1
   - 300 10
   - 60 10000
+
+install_redis_stack: false
+
+redis_service_name: "{{ 'redis-server' if not install_redis_stack else 'redis-stack-server' }}"
+redis_config_file: "{{ '/etc/redis/redis.conf' if not install_redis_stack else '/etc/redis-stack.conf' }}"
+redis_systemd_override_dir: "{{ '/etc/systemd/system/redis-server.service.d' if not install_redis_stack else '/etc/systemd/system/redis-stack-server.service.d' }}"
+redis_pidfile: "{{ '/var/run/redis/redis-server.pid' if not install_redis_stack else '/var/run/redis-stack/redis-stack-server.pid' }}"
+redis_dir: "{{ '/var/lib/redis' if not install_redis_stack else '/var/lib/redis-stack' }}"
