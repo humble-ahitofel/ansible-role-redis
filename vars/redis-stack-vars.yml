@@ -1,0 +1,5 @@
+redis_service_name: redis-stack-server
+redis_config_file: /etc/redis-stack.conf
+redis_systemd_override_dir: /etc/systemd/system/redis-stack-server.service.d
+redis_pidfile: /var/run/redis-stack/redis-stack-server.pid
+redis_dir: /var/lib/redis-stack

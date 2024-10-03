@@ -2,3 +2,11 @@ redis_save:
   - 900 1
   - 300 10
   - 60 10000
+
+install_redis_stack: false
+
+redis_service_name: redis-server
+redis_config_file: /etc/redis/redis.conf
+redis_systemd_override_dir: /etc/systemd/system/redis-server.service.d
+redis_pidfile: /var/run/redis/redis-server.pid
+redis_dir: /var/lib/redis
