@@ -1,0 +1,43 @@
+---
+
+- name: Install required packages for redis-stack
+  apt:
+    name:
+      - lsb-release
+      - curl
+      - gpg
+    state: present
+
+- name: Download libssl1.1 package from Debian Bullseye
+  ansible.builtin.get_url:
+    url: http://ftp.fi.debian.org/debian/pool/main/o/openssl/libssl1.1_1.1.1w-0+deb11u1_amd64.deb
+    dest: /tmp/libssl1.1_1.1.1w-0+deb11u1_amd64.deb
+    checksum: "sha256:aadf8b4b197335645b230c2839b4517aa444fd2e8f434e5438c48a18857988f7"
+
+- name: Install libssl1.1 package
+  apt:
+    deb: /tmp/libssl1.1_1.1.1w-0+deb11u1_amd64.deb
+
+- name: Add Redis Stack GPG key
+  shell: curl -fsSL https://packages.redis.io/gpg | gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg
+  args:
+    creates: /usr/share/keyrings/redis-archive-keyring.gpg
+
+- name: Set permissions on Redis Stack GPG keyring
+  file:
+    path: /usr/share/keyrings/redis-archive-keyring.gpg
+    mode: '0644'
+
+- name: Add Redis Stack apt repository
+  apt_repository:
+    repo: "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb bullseye main"
+    filename: redis
+
+- name: Update apt cache
+  apt:
+    update_cache: yes
+
+- name: Install redis-stack-server
+  apt:
+    name: redis-stack-server
+    state: present
